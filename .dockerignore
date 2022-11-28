@@ -1,0 +1,14 @@
+src/test
+target
+
+.env
+.env.*
+.git
+.gitignore
+.github
+Dockerfile
+*.md
+lombok.config
+
+.idea
+.vscode

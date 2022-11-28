@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: 'post-service'
+  config:
+    import: optional:file:.env[.properties]
+  datasource:
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+    url: ${POSTGRES_DSN}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  devtools:
+    restart:
+      enabled: true
+server:
+  port: 6789
+  error:
+    include-message: always
+springfox:
+  documentation:
+    swagger-ui:
+      enabled: true
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY_ID}
+      secret-key: ${AWS_SECRET_ACCESS_KEY}
+      use-default-aws-credentials-chain: true
+    region:
+      static: ${AWS_REGION}
+      auto: false
+      use-default-aws-region-chain: true
+    stack:
+      auto: false
+    endpoint-url: ${AWS_ENDPOINT_URL}
+    s3-bucket: ${AWS_BUCKET_NAME}
+logging:
+  level:
+    com.amazonaws.util.EC2MetadataUtils: error
+    com.amazonaws.internal.InstanceMetadataServiceResourceFetcher: error
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVICE_URL}

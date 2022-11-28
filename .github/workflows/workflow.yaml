@@ -1,0 +1,25 @@
+name: HabSat - CI/CD
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  tests:
+    name: Test
+    uses: grupacosmo/habsat-starter/.github/workflows/tests.yaml@master
+
+  build:
+    name: Build
+    needs: [tests]
+    uses: grupacosmo/habsat-starter/.github/workflows/build.yaml@master
+    with:
+      DOCKER_HUB_REPOSITORY: cosmopk/habsat-post-service
+      DOCKER_HUB_TAGS: master
+    secrets: inherit
+
+  deploy-staging:
+    name: Staging
+    needs: [build]
+    uses: grupacosmo/habsat-starter/.github/workflows/deploy.yaml@master

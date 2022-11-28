@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: 'post-service'
+  config:
+    import: optional:file:.env.test[.properties]
+  datasource:
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+    url: ${POSTGRES_DSN}
+  jpa:
+    hibernate:
+      ddl-auto: create
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+server:
+  port: 8080
+logging:
+  level:
+    root: error
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY_ID}
+      secret-key: ${AWS_SECRET_ACCESS_KEY}
+      use-default-aws-credentials-chain: true
+    region:
+      static: ${AWS_REGION}
+      auto: false
+      use-default-aws-region-chain: true
+    stack:
+      auto: false
+    endpoint-url: ${AWS_ENDPOINT_URL}
+    s3-bucket: ${AWS_BUCKET_NAME}
+eureka:
+  client:
+    enabled: false
+springfox:
+  documentation:
+    enabled: false
