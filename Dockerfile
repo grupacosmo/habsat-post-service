@@ -20,7 +20,6 @@ FROM adoptopenjdk/openjdk11:jdk-11.0.16.1_1-alpine-slim AS release
 
 LABEL maintainer="grupacosmo/webdev"
 WORKDIR /app
-EXPOSE 8080
 
 COPY --from=build /app/target/*.jar /app/service.jar
 

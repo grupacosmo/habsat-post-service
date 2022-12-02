@@ -2,7 +2,7 @@ spring:
   application:
     name: 'post-service'
   config:
-    import: optional:file:.env[.properties]
+    import: configserver:http://config-server:8061
   datasource:
     username: ${POSTGRES_USERNAME}
     password: ${POSTGRES_PASSWORD}
@@ -17,7 +17,7 @@ spring:
     restart:
       enabled: true
 server:
-  port: 6789
+  port: 8004
   error:
     include-message: always
 springfox:
