@@ -1,11 +1,10 @@
 package pl.edu.pk.cosmo.habsatbackend.postsservice.converters;
 
 import org.junit.jupiter.api.Test;
-import pl.edu.pk.cosmo.habsatbackend.postsservice.converters.MediaResourceConverter;
-import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.MediaEntity;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.Media;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.resources.MediaResource;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.services.S3Service;
-import pl.edu.pk.cosmo.habsatbackend.postsservice.utils.factories.MediaEntityFactory;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.utils.factories.MediaFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -21,7 +20,7 @@ public class MediaResourceConverterUnitTest {
     @Test
     public void shouldConvertMediaEntityIntoMediaResource() throws MalformedURLException {
         when(s3ServiceMock.generateUrl(anyString())).thenReturn(new URL("http://s3.fake/bucket/file.png"));
-        MediaEntity entity = new MediaEntityFactory().create();
+        Media entity = new MediaFactory().create();
         MediaResource resource = mediaResourceConverter.of(entity);
         assertThat(resource).isInstanceOf(MediaResource.class);
         assertThat(resource.getId()).isEqualTo(entity.getId());

@@ -1,12 +1,12 @@
 package pl.edu.pk.cosmo.habsatbackend.postsservice.repositories;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
-import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.MediaEntity;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.Media;
 
 import java.util.List;
 
 @Repository
-public interface MediaRepository extends JpaRepository<MediaEntity, Long> {
-    public List<MediaEntity> findAllByOrderById();
+public interface MediaRepository extends MongoRepository<Media, String> {
+    public List<Media> findAllByOrderById();
 }

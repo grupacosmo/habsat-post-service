@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.converters.PostResourceConverter;
-import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.PostEntity;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.Post;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.exceptions.MediaNotFoundException;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.exceptions.PostNotFoundException;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.exceptions.PostSlugIsNotUnique;
@@ -25,30 +25,30 @@ public class PostController {
 
     @GetMapping
     public ResponseEntity<?> findAllPosts() {
-        List<PostEntity> posts = postService.findAllPosts();
+        List<Post> posts = postService.findAllPosts();
         return new ResponseEntity<>(posts.stream().map(postResourceConverter::of).collect(Collectors.toList()), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> findPostById(@PathVariable Long id) throws PostNotFoundException {
-        PostEntity post = postService.findPostById(id);
+    public ResponseEntity<?> findPostById(@PathVariable String id) throws PostNotFoundException {
+        Post post = postService.findPostById(id);
         return new ResponseEntity<>(postResourceConverter.of(post), HttpStatus.OK);
     }
 
     @PostMapping
     public ResponseEntity<?> createPost(@Valid @RequestBody ModifyPostRequest modifyPostRequest) throws MediaNotFoundException, PostSlugIsNotUnique {
-        PostEntity post = postService.createPost(modifyPostRequest);
+        Post post = postService.createPost(modifyPostRequest);
         return new ResponseEntity<>(postResourceConverter.of(post), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updatePost(@PathVariable Long id, @Valid @RequestBody ModifyPostRequest modifyPostRequest) throws PostSlugIsNotUnique, PostNotFoundException, MediaNotFoundException {
-        PostEntity post = postService.updatePost(id, modifyPostRequest);
+    public ResponseEntity<?> updatePost(@PathVariable String id, @Valid @RequestBody ModifyPostRequest modifyPostRequest) throws PostSlugIsNotUnique, PostNotFoundException, MediaNotFoundException {
+        Post post = postService.updatePost(id, modifyPostRequest);
         return new ResponseEntity<>(postResourceConverter.of(post), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deletePost(@PathVariable Long id) {
+    public ResponseEntity<?> deletePost(@PathVariable String id) {
         postService.deletePost(id);
         return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
     }

@@ -5,25 +5,25 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 
-import javax.persistence.*;
 import java.util.Date;
 
 @Accessors(chain = true)
-@Entity
-@Table(name = "media")
+@Document("media")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class MediaEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Media {
+    @MongoId
+    @Field("_id")
+    private String id;
 
     @Setter
-    @Column(name = "s3_key")
     private String s3Key;
 
     @Setter
@@ -35,9 +35,9 @@ public class MediaEntity {
     @Setter
     private Long sizeOfFile;
 
-    @CreationTimestamp
+    @CreatedDate
     private Date createdAt;
 
-    @UpdateTimestamp
+    @LastModifiedDate
     private Date updatedAt;
 }

@@ -6,12 +6,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.multipart.MultipartFile;
-import pl.edu.pk.cosmo.habsatbackend.postsservice.controllers.MediaController;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.converters.MediaResourceConverter;
-import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.MediaEntity;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.Media;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.exceptions.MediaNotFoundException;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.services.MediaService;
-import pl.edu.pk.cosmo.habsatbackend.postsservice.utils.factories.MediaEntityFactory;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.utils.factories.MediaFactory;
 
 import java.util.List;
 
@@ -24,12 +23,12 @@ public class MediaControllerUnitTest {
     private final MediaResourceConverter mediaResourceConverterMock = mock(MediaResourceConverter.class);
     private final MultipartFile multipartFileMock = mock(MultipartFile.class);
     private MediaController mediaController;
-    private List<MediaEntity> listOfMediaEntities;
+    private List<Media> listOfMediaEntities;
 
     @BeforeAll
     public void beforeAll() {
         mediaController = new MediaController(mediaServiceMock, mediaResourceConverterMock);
-        listOfMediaEntities = new MediaEntityFactory().createMany(2);
+        listOfMediaEntities = new MediaFactory().createMany(2);
     }
 
     @AfterEach
@@ -48,9 +47,9 @@ public class MediaControllerUnitTest {
 
     @Test
     public void shouldFindMediaByIdAndTransformItIntoMediaResource() throws MediaNotFoundException {
-        when(mediaServiceMock.findMediaById(anyLong())).thenReturn(listOfMediaEntities.get(0));
-        assertThat(mediaController.findMediaById(0L).getStatusCode()).isEqualTo(HttpStatus.OK);
-        verify(mediaServiceMock, times(1)).findMediaById(0L);
+        when(mediaServiceMock.findMediaById(anyString())).thenReturn(listOfMediaEntities.get(0));
+        assertThat(mediaController.findMediaById("id").getStatusCode()).isEqualTo(HttpStatus.OK);
+        verify(mediaServiceMock, times(1)).findMediaById("id");
         verify(mediaResourceConverterMock, times(1)).of(listOfMediaEntities.get(0));
     }
 
@@ -64,7 +63,7 @@ public class MediaControllerUnitTest {
 
     @Test
     public void shouldDeleteMediaAndReturnEmptyResponse() throws MediaNotFoundException {
-        assertThat(mediaController.deleteMedia(0L).getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-        verify(mediaServiceMock, times(1)).deleteMedia(0L);
+        assertThat(mediaController.deleteMedia("id").getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        verify(mediaServiceMock, times(1)).deleteMedia("id");
     }
 }

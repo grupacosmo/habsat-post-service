@@ -3,15 +3,17 @@ package pl.edu.pk.cosmo.habsatbackend.postsservice.controllers;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MvcResult;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.E2ETest;
-import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.PostEntity;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.Post;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.repositories.PostRepository;
-import pl.edu.pk.cosmo.habsatbackend.postsservice.utils.factories.PostEntityFactory;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.resources.PostResource;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.utils.factories.PostFactory;
 
 import java.util.List;
-
-import static org.assertj.db.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -22,7 +24,7 @@ public class PostControllerE2ETest extends E2ETest {
 
     @Test
     public void shouldFindAllPostsReturnsAllPosts() throws Exception {
-        List<PostEntity> listOfPostEntities = new PostEntityFactory().createMany(2);
+        List<Post> listOfPostEntities = new PostFactory().createMany(2);
         postRepository.saveAll(listOfPostEntities);
 
         mvc.perform(get(api("/posts")))
@@ -36,63 +38,70 @@ public class PostControllerE2ETest extends E2ETest {
 
     @Test
     public void shouldFindPostByIdReturnPost() throws Exception {
-        PostEntity postEntity = postRepository.saveAndFlush(new PostEntityFactory().create());
+        Post post = postRepository.save(new PostFactory().create());
 
-        mvc.perform(get(api("/posts/" + postEntity.getId())))
+        mvc.perform(get(api("/posts/" + post.getId())))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(postEntity.getId()))
-                .andExpect(jsonPath("$.thumbnailId").value(postEntity.getThumbnailId()))
-                .andExpect(jsonPath("$.title").value(postEntity.getTitle()))
-                .andExpect(jsonPath("$.slug").value(postEntity.getSlug()))
-                .andExpect(jsonPath("$.content").value(postEntity.getContent()))
-                .andExpect(jsonPath("$.emailOfAuthor").value(postEntity.getEmailOfAuthor()));
+                .andExpect(jsonPath("$.id").value(post.getId()))
+                .andExpect(jsonPath("$.thumbnailId").value(post.getThumbnailId()))
+                .andExpect(jsonPath("$.title").value(post.getTitle()))
+                .andExpect(jsonPath("$.slug").value(post.getSlug()))
+                .andExpect(jsonPath("$.content").value(post.getContent()))
+                .andExpect(jsonPath("$.emailOfAuthor").value(post.getEmailOfAuthor()));
     }
 
     @Test
     public void shouldCreatePostCreatesAndReturnsPost() throws Exception {
         JSONObject payload = new JSONObject(getModifyPostRequestPayload());
-        mvc.perform(post(api("/posts")).contentType(MediaType.APPLICATION_JSON).content(getModifyPostRequestPayload()))
+        MvcResult result = mvc.perform(post(api("/posts")).contentType(MediaType.APPLICATION_JSON).content(getModifyPostRequestPayload()))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").isNumber())
+                .andExpect(jsonPath("$.id").isString())
                 .andExpect(jsonPath("$.title").value(payload.get("title")))
                 .andExpect(jsonPath("$.slug").value(payload.get("slug")))
                 .andExpect(jsonPath("$.content").value(payload.get("content")))
                 .andExpect(jsonPath("$.publishedAt").value(payload.get("publishedAt")))
-                .andExpect(jsonPath("$.emailOfAuthor").value("email_of_author@from_authorization.claims"));
+                .andExpect(jsonPath("$.emailOfAuthor").value("email_of_author@from_authorization.claims"))
+                .andReturn();
 
+        assertThat(mongo.count(new Query(), Post.class)).isEqualTo(1);
 
-        assertThat(table("posts"))
-                .hasNumberOfRows(1)
-                .column("id").value().isNumber()
-                .column("thumbnail_id").value().isNull()
-                .column("title").value().isEqualTo(payload.get("title"))
-                .column("slug").value().isEqualTo(payload.get("slug"))
-                .column("content").value().isEqualTo(payload.get("content"))
-                .column("email_of_author").value().isEqualTo("email_of_author@from_authorization.claims");
+        PostResource resource = objectMapper.readValue(result.getResponse().getContentAsString(), PostResource.class);
+        Post post = mongo.findById(resource.getId(), Post.class);
+        assertThat(post.getId()).isNotNull();
+        assertThat(post.getThumbnailId()).isNull();
+        assertThat(post.getThumbnail()).isNull();
+        assertThat(post.getTitle()).isEqualTo(payload.getString("title"));
+        assertThat(post.getSlug()).isEqualTo(payload.getString("slug"));
+        assertThat(post.getContent()).isEqualTo(payload.getString("content"));
+        assertThat(post.getEmailOfAuthor()).isEqualTo("email_of_author@from_authorization.claims");
     }
 
     @Test
     public void shouldUpdatePostUpdatesAndReturnsPost() throws Exception {
-        PostEntity postEntity = postRepository.saveAndFlush(new PostEntityFactory().create());
+        Post post = postRepository.save(new PostFactory().create());
 
         JSONObject payload = new JSONObject(getModifyPostRequestPayload());
-        mvc.perform(put(api("/posts/" + postEntity.getId())).contentType(MediaType.APPLICATION_JSON).content(getModifyPostRequestPayload()))
+        MvcResult result = mvc.perform(put(api("/posts/" + post.getId())).contentType(MediaType.APPLICATION_JSON).content(getModifyPostRequestPayload()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(postEntity.getId()))
+                .andExpect(jsonPath("$.id").value(post.getId()))
                 .andExpect(jsonPath("$.title").value(payload.get("title")))
                 .andExpect(jsonPath("$.slug").value(payload.get("slug")))
                 .andExpect(jsonPath("$.content").value(payload.get("content")))
                 .andExpect(jsonPath("$.publishedAt").value(payload.get("publishedAt")))
-                .andExpect(jsonPath("$.emailOfAuthor").value(postEntity.getEmailOfAuthor()));
+                .andExpect(jsonPath("$.emailOfAuthor").value(post.getEmailOfAuthor()))
+                .andReturn();
 
-        assertThat(table("posts"))
-                .hasNumberOfRows(1)
-                .column("id").value().isEqualTo(postEntity.getId())
-                .column("thumbnail_id").value().isNull()
-                .column("title").value().isEqualTo(payload.get("title"))
-                .column("slug").value().isEqualTo(payload.get("slug"))
-                .column("content").value().isEqualTo(payload.get("content"))
-                .column("email_of_author").value().isEqualTo(postEntity.getEmailOfAuthor());
+        assertThat(mongo.count(new Query(), Post.class)).isEqualTo(1);
+
+        PostResource resource = objectMapper.readValue(result.getResponse().getContentAsString(), PostResource.class);
+        Post updatedPost = mongo.findById(resource.getId(), Post.class);
+        assertThat(updatedPost.getId()).isEqualTo(post.getId());
+        assertThat(updatedPost.getThumbnailId()).isNull();
+        assertThat(updatedPost.getThumbnail()).isNull();
+        assertThat(updatedPost.getTitle()).isEqualTo(payload.getString("title"));
+        assertThat(updatedPost.getSlug()).isEqualTo(payload.getString("slug"));
+        assertThat(updatedPost.getContent()).isEqualTo(payload.getString("content"));
+        assertThat(updatedPost.getEmailOfAuthor()).isEqualTo(post.getEmailOfAuthor());
     }
 
     private String getModifyPostRequestPayload() {
@@ -107,10 +116,10 @@ public class PostControllerE2ETest extends E2ETest {
 
     @Test
     public void shouldDeletePostDeletesPost() throws Exception {
-        PostEntity postEntity = postRepository.saveAndFlush(new PostEntityFactory().create());
-        mvc.perform(delete(api("/posts/" + postEntity.getId())))
+        Post post = postRepository.save(new PostFactory().create());
+        mvc.perform(delete(api("/posts/" + post.getId())))
                 .andExpect(status().isNoContent());
 
-        assertThat(table("posts")).hasNumberOfRows(0);
+        // assertThat(table("posts")).hasNumberOfRows(0);
     }
 }

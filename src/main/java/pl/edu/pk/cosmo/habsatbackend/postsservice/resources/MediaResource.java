@@ -6,7 +6,7 @@ import lombok.experimental.Accessors;
 @Data
 @Accessors(chain = true)
 public class MediaResource {
-    private Long id;
+    private String id;
     private String url;
     private String nameOfFile;
     private String typeOfFile;

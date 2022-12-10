@@ -7,13 +7,17 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MvcResult;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.E2ETest;
-import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.MediaEntity;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.Media;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.Post;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.repositories.MediaRepository;
-import pl.edu.pk.cosmo.habsatbackend.postsservice.utils.factories.MediaEntityFactory;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.resources.MediaResource;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.resources.PostResource;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.utils.factories.MediaFactory;
 
 import java.util.List;
 
@@ -34,7 +38,7 @@ public class MediaControllerE2ETest extends E2ETest {
 
     @Test
     public void shouldFindAllMediaReturnsAllMedia() throws Exception {
-        List<MediaEntity> listOfMediaEntities = new MediaEntityFactory().createMany(2);
+        List<Media> listOfMediaEntities = new MediaFactory().createMany(2);
         mediaRepository.saveAll(listOfMediaEntities);
 
         mvc.perform(get(api("/media")))
@@ -48,7 +52,7 @@ public class MediaControllerE2ETest extends E2ETest {
 
     @Test
     public void shouldFindMediaByIdReturnMedia() throws Exception {
-        MediaEntity mediaEntity = mediaRepository.saveAndFlush(new MediaEntityFactory().create());
+        Media mediaEntity = mediaRepository.save(new MediaFactory().create());
 
         mvc.perform(get(api("/media/" + mediaEntity.getId())))
                 .andExpect(status().isOk())
@@ -65,36 +69,36 @@ public class MediaControllerE2ETest extends E2ETest {
 
         MvcResult result = mvc.perform(multipart(api("/media")).file(file))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").isNumber())
+                .andExpect(jsonPath("$.id").isString())
                 .andExpect(jsonPath("$.url").isString())
                 .andExpect(jsonPath("$.nameOfFile").value(file.getOriginalFilename()))
                 .andExpect(jsonPath("$.typeOfFile").value(file.getContentType()))
                 .andExpect(jsonPath("$.sizeOfFile").value(file.getSize()))
                 .andReturn();
 
-        assertThat(table("media"))
-                .hasNumberOfRows(1)
-                .column("id").value().isNumber()
-                .column("s3_key").value().isText()
-                .column("name_of_file").value().isEqualTo(file.getOriginalFilename())
-                .column("type_of_file").value().isEqualTo(file.getContentType())
-                .column("size_of_file").value().isEqualTo(file.getSize());
+        assertThat(mongo.count(new Query(), Media.class)).isEqualTo(1);
 
-        JSONObject json = new JSONObject(result.getResponse().getContentAsString());
-        MediaEntity mediaEntity = mediaRepository.findById(json.getLong("id")).orElseThrow();
-        assertThat(client.doesObjectExist(nameOfBucket, mediaEntity.getS3Key())).isTrue();
+        MediaResource resource = objectMapper.readValue(result.getResponse().getContentAsString(), MediaResource.class);
+        Media media = mongo.findById(resource.getId(), Media.class);
+        assertThat(media.getId()).isNotNull().isInstanceOf(String.class);
+        assertThat(media.getS3Key()).isNotNull().isInstanceOf(String.class);
+        assertThat(media.getNameOfFile()).isEqualTo(file.getOriginalFilename());
+        assertThat(media.getTypeOfFile()).isEqualTo(file.getContentType());
+        assertThat(media.getSizeOfFile()).isEqualTo(file.getSize());
+
+        assertThat(client.doesObjectExist(nameOfBucket, media.getS3Key())).isTrue();
     }
 
     @Test
     public void shouldDeleteMediaDeletesMedia() throws Exception {
-        MediaEntity mediaEntity = mediaRepository.saveAndFlush(new MediaEntityFactory().create());
+        Media mediaEntity = mediaRepository.save(new MediaFactory().create());
         MockMultipartFile file = new MockMultipartFile("file", mediaEntity.getNameOfFile(), mediaEntity.getTypeOfFile(), "Hello, World!".getBytes());
         client.putObject(nameOfBucket, mediaEntity.getS3Key(), file.getInputStream(), new ObjectMetadata());
 
         mvc.perform(delete(api("/media/" + mediaEntity.getId())))
                 .andExpect(status().isNoContent());
 
-        assertThat(table("media")).hasNumberOfRows(0);
+        assertThat(mongo.count(new Query(), Media.class)).isEqualTo(0);
         assertThat(client.doesObjectExist(nameOfBucket, mediaEntity.getS3Key())).isFalse();
     }
 }

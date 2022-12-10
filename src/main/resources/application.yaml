@@ -3,27 +3,22 @@ spring:
     name: 'post-service'
   config:
     import: configserver:http://config-server:8061
-  datasource:
-    username: ${POSTGRES_USERNAME}
-    password: ${POSTGRES_PASSWORD}
-    url: ${POSTGRES_DSN}
-  jpa:
-    hibernate:
-      ddl-auto: validate
+  data:
+    mongodb:
+      host: ${MONGO_HOST}
+      port: ${MONGO_PORT}
+      database: ${MONGO_DB}
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
   devtools:
     restart:
       enabled: true
+
 server:
-  port: 8004
+  port: 8080
   error:
     include-message: always
-springfox:
-  documentation:
-    swagger-ui:
-      enabled: true
 cloud:
   aws:
     credentials:

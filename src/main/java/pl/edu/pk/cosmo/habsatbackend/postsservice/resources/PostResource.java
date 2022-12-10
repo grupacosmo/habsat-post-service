@@ -10,8 +10,9 @@ import java.util.Date;
 @Data
 @Accessors(chain = true)
 public class PostResource {
-    private Long id;
-    private Long thumbnailId;
+    private String id;
+    private String thumbnailId;
+    private MediaResource thumbnail;
     private String title;
     private String slug;
     private String content;

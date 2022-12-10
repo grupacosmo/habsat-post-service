@@ -3,8 +3,9 @@ package pl.edu.pk.cosmo.habsatbackend.postsservice.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import pl.edu.pk.cosmo.habsatbackend.postsservice.converters.PostEntityConverter;
-import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.PostEntity;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.converters.PostConverter;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.Media;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.Post;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.exceptions.MediaNotFoundException;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.exceptions.PostNotFoundException;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.exceptions.PostSlugIsNotUnique;
@@ -20,23 +21,27 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final MediaRepository mediaRepository;
-    private final PostEntityConverter postEntityConverter;
+    private final PostConverter postConverter;
 
 
-    public List<PostEntity> findAllPosts() {
+    public List<Post> findAllPosts() {
         return postRepository.findAllByOrderById();
     }
 
-    public PostEntity findPostById(Long id) throws PostNotFoundException {
+    public Post findPostById(String id) throws PostNotFoundException {
         return postRepository.findById(id).orElseThrow(PostNotFoundException::new);
     }
 
     @Transactional
-    public PostEntity createPost(ModifyPostRequest modifyPostRequest) throws PostSlugIsNotUnique, MediaNotFoundException {
+    public Post createPost(ModifyPostRequest modifyPostRequest) throws PostSlugIsNotUnique, MediaNotFoundException {
         throwIfSlugIsNotUnique(modifyPostRequest.getSlug());
-        throwIfThumbnailNotExists(modifyPostRequest.getThumbnailId());
 
-        PostEntity post = postEntityConverter.of(modifyPostRequest, "email_of_author@from_authorization.claims");
+        Post post = postConverter.of(modifyPostRequest, "email_of_author@from_authorization.claims");
+        if (modifyPostRequest.getThumbnailId() != null) {
+            Media thumbnail = mediaRepository.findById(modifyPostRequest.getThumbnailId()).orElseThrow(MediaNotFoundException::new);
+            post.setThumbnail(thumbnail);
+        }
+
         return postRepository.save(post);
     }
 
@@ -45,25 +50,25 @@ public class PostService {
     }
 
     @Transactional
-    public PostEntity updatePost(Long id, ModifyPostRequest modifyPostRequest) throws PostSlugIsNotUnique, PostNotFoundException, MediaNotFoundException {
+    public Post updatePost(String id, ModifyPostRequest modifyPostRequest) throws PostSlugIsNotUnique, PostNotFoundException, MediaNotFoundException {
         throwIfSlugIsNotUnique(modifyPostRequest.getSlug(), id);
-        throwIfThumbnailNotExists(modifyPostRequest.getThumbnailId());
 
-        PostEntity currentPost = postRepository.findById(id).orElseThrow(PostNotFoundException::new);
-        PostEntity updatedPost = postEntityConverter.of(modifyPostRequest, currentPost);
+        Post currentPost = postRepository.findById(id).orElseThrow(PostNotFoundException::new);
+        Post updatedPost = postConverter.of(modifyPostRequest, currentPost);
+        if (modifyPostRequest.getThumbnailId() != null) {
+            Media thumbnail = mediaRepository.findById(modifyPostRequest.getThumbnailId()).orElseThrow(MediaNotFoundException::new);
+            updatedPost.setThumbnail(thumbnail);
+        }
+
         return postRepository.save(updatedPost);
     }
 
-    private void throwIfSlugIsNotUnique(String slug, Long id) throws PostSlugIsNotUnique {
+    private void throwIfSlugIsNotUnique(String slug, String id) throws PostSlugIsNotUnique {
         if (postRepository.existsBySlugAndIdNot(slug, id)) throw new PostSlugIsNotUnique();
     }
 
-    private void throwIfThumbnailNotExists(Long thumbnailId) throws MediaNotFoundException {
-        if (thumbnailId != null && !mediaRepository.existsById(thumbnailId)) throw new MediaNotFoundException();
-    }
-
     @Transactional
-    public void deletePost(Long id) {
+    public void deletePost(String id) {
         postRepository.deleteById(id);
     }
 }

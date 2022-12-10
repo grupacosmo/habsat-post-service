@@ -1,14 +1,14 @@
 package pl.edu.pk.cosmo.habsatbackend.postsservice.repositories;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
-import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.PostEntity;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.Post;
 
 import java.util.List;
 
 @Repository
-public interface PostRepository extends JpaRepository<PostEntity, Long> {
+public interface PostRepository extends MongoRepository<Post, String> {
     public Boolean existsBySlug(String slug);
-    public Boolean existsBySlugAndIdNot(String slug, Long id);
-    public List<PostEntity> findAllByOrderById();
+    public Boolean existsBySlugAndIdNot(String slug, String id);
+    public List<Post> findAllByOrderById();
 }

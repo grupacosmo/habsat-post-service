@@ -9,7 +9,6 @@ import pl.edu.pk.cosmo.habsatbackend.postsservice.validators.Alphanumeric;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Positive;
 import java.util.Date;
 
 @Data
@@ -22,8 +21,7 @@ public class ModifyPostRequest {
     private String title;
 
     @Nullable
-    @Positive
-    private Long thumbnailId;
+    private String thumbnailId;
 
     @NotBlank
     @Length(max = 256)
