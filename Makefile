@@ -19,7 +19,4 @@ test-e2e:
 		-f ../../docker-compose.yaml \
 		run -it -v $(shell pwd):/source -w /source post-service \
 		mvn test -Dtest=*E2ETest -DfailIfNoTests=false
-#	docker \
-#		run -it -v $(shell pwd):/source -w /source --net habsat-starter_habsat_network maven:3.8.6-jdk-11 \
-#		mvn test -Dtest=*E2ETest -DfailIfNoTests=false
 
