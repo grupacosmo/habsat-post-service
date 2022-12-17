@@ -15,7 +15,6 @@ spring:
     restart:
       enabled: true
 server:
-  port: 8080
   error:
     include-message: always
 cloud:
@@ -58,8 +57,6 @@ eureka:
 #  mvc:
 #    pathmatch:
 #      matching-strategy: ant_path_matcher
-#server:
-#  port: 8080
 #logging:
 #  level:
 #    root: warn

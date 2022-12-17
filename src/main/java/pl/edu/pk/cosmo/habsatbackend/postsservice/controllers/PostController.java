@@ -24,7 +24,7 @@ public class PostController {
     private final PostResourceConverter postResourceConverter;
 
     @GetMapping
-    public ResponseEntity<?> findAllPosts() {
+    public ResponseEntity<?> findAllPosts(@RequestParam(required = false, defaultValue = "1") Integer page, @RequestParam(required = false, defaultValue = "10") Integer size, @RequestParam(required = false) String search) {
         List<Post> posts = postService.findAllPosts();
         return new ResponseEntity<>(posts.stream().map(postResourceConverter::of).collect(Collectors.toList()), HttpStatus.OK);
     }
