@@ -14,14 +14,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Slf4j
 public class Paging<T extends Enum<T>> {
     private final Integer page;
     private final Integer size;
     private final String[] sorts;
     private final Class<T> allowedProperties;
-
-    private Logger logger = LoggerFactory.getLogger(Paging.class);
 
     private Paging(Integer page, Integer size, String[] sorts, Class<T> allowedProperties) {
         this.page = page;

@@ -1,6 +1,7 @@
 package pl.edu.pk.cosmo.habsatbackend.postsservice.controllers;
 
 import lombok.RequiredArgsConstructor;
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,7 +26,7 @@ public class MediaController {
     private final MediaResourceConverter mediaResourceConverter;
 
     @GetMapping
-    public ResponseEntity<?> findAllMedia(@Valid PagingRequest pagingRequest) {
+    public ResponseEntity<?> findAllMedia(@Valid @ParameterObject PagingRequest pagingRequest) {
         Page<Media> media = mediaService.findAllMedia(Paging.of(pagingRequest, MediaSort.class));
         return new ResponseEntity<>(media.map(mediaResourceConverter::of), HttpStatus.OK);
     }

@@ -1,6 +1,7 @@
 package pl.edu.pk.cosmo.habsatbackend.postsservice.controllers;
 
 import lombok.RequiredArgsConstructor;
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class PostController {
     private final PostResourceConverter postResourceConverter;
 
     @GetMapping
-    public ResponseEntity<?> findAllPosts(@Valid PagingRequest pagingRequest) {
+    public ResponseEntity<?> findAllPosts(@Valid @ParameterObject PagingRequest pagingRequest) {
         Page<Post> posts = postService.findAllPosts(Paging.of(pagingRequest, PostSort.class));
         return new ResponseEntity<>(posts.map(postResourceConverter::of), HttpStatus.OK);
     }
