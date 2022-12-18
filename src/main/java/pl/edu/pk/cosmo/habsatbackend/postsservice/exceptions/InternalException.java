@@ -5,6 +5,7 @@ public class InternalException extends Exception {
         POST_NOT_FOUND,
         POST_SLUG_IS_NOT_UNIQUE,
         MEDIA_NOT_FOUND,
+        INVALID_SORT,
     }
 
     private Code code;

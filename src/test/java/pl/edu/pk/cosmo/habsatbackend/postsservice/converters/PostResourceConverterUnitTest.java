@@ -3,7 +3,7 @@ package pl.edu.pk.cosmo.habsatbackend.postsservice.converters;
 import org.junit.jupiter.api.Test;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.Post;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.resources.PostResource;
-import pl.edu.pk.cosmo.habsatbackend.postsservice.utils.factories.PostFactory;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.PostFactory;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.mock;

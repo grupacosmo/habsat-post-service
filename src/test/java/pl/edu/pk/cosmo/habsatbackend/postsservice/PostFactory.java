@@ -1,4 +1,4 @@
-package pl.edu.pk.cosmo.habsatbackend.postsservice.utils.factories;
+package pl.edu.pk.cosmo.habsatbackend.postsservice;
 
 import com.github.javafaker.Faker;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.Post;

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.Post;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.request.ModifyPostRequest;
-import pl.edu.pk.cosmo.habsatbackend.postsservice.utils.factories.PostFactory;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.PostFactory;
 
 import java.sql.Timestamp;
 import java.time.Instant;

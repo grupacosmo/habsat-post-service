@@ -3,7 +3,6 @@ package pl.edu.pk.cosmo.habsatbackend.postsservice.controllers;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,11 +12,9 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MvcResult;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.E2ETest;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.Media;
-import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.Post;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.repositories.MediaRepository;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.resources.MediaResource;
-import pl.edu.pk.cosmo.habsatbackend.postsservice.resources.PostResource;
-import pl.edu.pk.cosmo.habsatbackend.postsservice.utils.factories.MediaFactory;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.MediaFactory;
 
 import java.util.List;
 

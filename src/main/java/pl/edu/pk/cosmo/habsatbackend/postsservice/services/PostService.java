@@ -1,6 +1,7 @@
 package pl.edu.pk.cosmo.habsatbackend.postsservice.services;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.converters.PostConverter;
@@ -8,12 +9,12 @@ import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.Media;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.Post;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.exceptions.MediaNotFoundException;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.exceptions.PostNotFoundException;
-import pl.edu.pk.cosmo.habsatbackend.postsservice.exceptions.PostSlugIsNotUnique;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.exceptions.PostSlugIsNotUniqueException;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.models.PostSort;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.repositories.MediaRepository;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.repositories.PostRepository;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.request.ModifyPostRequest;
-
-import java.util.List;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.utlis.Paging;
 
 @Service
 @RequiredArgsConstructor
@@ -23,9 +24,8 @@ public class PostService {
     private final MediaRepository mediaRepository;
     private final PostConverter postConverter;
 
-
-    public List<Post> findAllPosts() {
-        return postRepository.findAllByOrderById();
+    public Page<Post> findAllPosts(Paging<PostSort> paging) {
+        return postRepository.findAll(paging.getPageable());
     }
 
     public Post findPostById(String id) throws PostNotFoundException {
@@ -33,7 +33,7 @@ public class PostService {
     }
 
     @Transactional
-    public Post createPost(ModifyPostRequest modifyPostRequest) throws PostSlugIsNotUnique, MediaNotFoundException {
+    public Post createPost(ModifyPostRequest modifyPostRequest) throws PostSlugIsNotUniqueException, MediaNotFoundException {
         throwIfSlugIsNotUnique(modifyPostRequest.getSlug());
 
         Post post = postConverter.of(modifyPostRequest, "email_of_author@from_authorization.claims");
@@ -45,12 +45,12 @@ public class PostService {
         return postRepository.save(post);
     }
 
-    private void throwIfSlugIsNotUnique(String slug) throws PostSlugIsNotUnique {
-        if (postRepository.existsBySlug(slug)) throw new PostSlugIsNotUnique();
+    private void throwIfSlugIsNotUnique(String slug) throws PostSlugIsNotUniqueException {
+        if (postRepository.existsBySlug(slug)) throw new PostSlugIsNotUniqueException();
     }
 
     @Transactional
-    public Post updatePost(String id, ModifyPostRequest modifyPostRequest) throws PostSlugIsNotUnique, PostNotFoundException, MediaNotFoundException {
+    public Post updatePost(String id, ModifyPostRequest modifyPostRequest) throws PostSlugIsNotUniqueException, PostNotFoundException, MediaNotFoundException {
         throwIfSlugIsNotUnique(modifyPostRequest.getSlug(), id);
 
         Post currentPost = postRepository.findById(id).orElseThrow(PostNotFoundException::new);
@@ -63,8 +63,8 @@ public class PostService {
         return postRepository.save(updatedPost);
     }
 
-    private void throwIfSlugIsNotUnique(String slug, String id) throws PostSlugIsNotUnique {
-        if (postRepository.existsBySlugAndIdNot(slug, id)) throw new PostSlugIsNotUnique();
+    private void throwIfSlugIsNotUnique(String slug, String id) throws PostSlugIsNotUniqueException {
+        if (postRepository.existsBySlugAndIdNot(slug, id)) throw new PostSlugIsNotUniqueException();
     }
 
     @Transactional

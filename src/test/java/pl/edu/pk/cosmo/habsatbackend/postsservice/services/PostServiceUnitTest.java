@@ -2,15 +2,20 @@ package pl.edu.pk.cosmo.habsatbackend.postsservice.services;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.converters.PostConverter;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.Post;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.exceptions.MediaNotFoundException;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.exceptions.PostNotFoundException;
-import pl.edu.pk.cosmo.habsatbackend.postsservice.exceptions.PostSlugIsNotUnique;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.exceptions.PostSlugIsNotUniqueException;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.models.PostSort;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.repositories.MediaRepository;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.repositories.PostRepository;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.request.ModifyPostRequest;
-import pl.edu.pk.cosmo.habsatbackend.postsservice.utils.factories.PostFactory;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.PostFactory;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.utlis.Paging;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,8 +29,10 @@ public class PostServiceUnitTest {
     private final MediaRepository mediaRepositoryMock = mock(MediaRepository.class);
     private final PostConverter postConverterMock = mock(PostConverter.class);
     private final ModifyPostRequest modifyPostRequestMock = mock(ModifyPostRequest.class);
+    private final Paging<PostSort> pagingMock = mock(Paging.class);
     private final PostService postService = new PostService(postRepositoryMock, mediaRepositoryMock, postConverterMock);
-    private final List<Post> listOfPostEntities = new PostFactory().createMany(2);
+    private final List<Post> listOfPosts = new PostFactory().createMany(2);
+    private final Page<Post> paginationOfPosts = new PageImpl<Post>(listOfPosts);
 
     @AfterEach
     public void afterEach() {
@@ -35,14 +42,15 @@ public class PostServiceUnitTest {
 
     @Test
     public void shouldFindAllPostsReturnsAllPostEntities() {
-        when(postRepositoryMock.findAllByOrderById()).thenReturn(listOfPostEntities);
-        assertThat(postService.findAllPosts()).isEqualTo(listOfPostEntities);
+        when(postRepositoryMock.findAll(any(Pageable.class))).thenReturn(paginationOfPosts);
+        when(pagingMock.getPageable()).thenReturn(Pageable.unpaged());
+        assertThat(postService.findAllPosts(pagingMock)).isEqualTo(paginationOfPosts);
     }
 
     @Test
     public void shouldFindPostByIdReturnsPostEntity() throws PostNotFoundException {
-        when(postRepositoryMock.findById("id")).thenReturn(Optional.of(listOfPostEntities.get(0)));
-        assertThat(postService.findPostById("id")).isEqualTo(listOfPostEntities.get(0));
+        when(postRepositoryMock.findById("id")).thenReturn(Optional.of(listOfPosts.get(0)));
+        assertThat(postService.findPostById("id")).isEqualTo(listOfPosts.get(0));
         verify(postRepositoryMock, times(1)).findById("id");
     }
 
@@ -53,19 +61,19 @@ public class PostServiceUnitTest {
     }
 
     @Test
-    public void shouldCreatePostCreatesPostEntity() throws MediaNotFoundException, PostSlugIsNotUnique {
+    public void shouldCreatePostCreatesPostEntity() throws MediaNotFoundException, PostSlugIsNotUniqueException {
         when(postRepositoryMock.existsBySlug(anyString())).thenReturn(false);
-        when(postRepositoryMock.save(any(Post.class))).thenReturn(listOfPostEntities.get(0));
+        when(postRepositoryMock.save(any(Post.class))).thenReturn(listOfPosts.get(0));
         when(modifyPostRequestMock.getThumbnailId()).thenReturn(null);
-        when(postConverterMock.of(any(ModifyPostRequest.class), anyString())).thenReturn(listOfPostEntities.get(0));
-        assertThat(postService.createPost(modifyPostRequestMock)).isEqualTo(listOfPostEntities.get(0));
+        when(postConverterMock.of(any(ModifyPostRequest.class), anyString())).thenReturn(listOfPosts.get(0));
+        assertThat(postService.createPost(modifyPostRequestMock)).isEqualTo(listOfPosts.get(0));
     }
 
     @Test
     public void shouldCreatePostThrowsWhenSlugIsNotUnique() {
         when(modifyPostRequestMock.getSlug()).thenReturn("slug");
         when(postRepositoryMock.existsBySlug(any())).thenReturn(true);
-        assertThatThrownBy(() -> postService.createPost(modifyPostRequestMock)).isInstanceOf(PostSlugIsNotUnique.class);
+        assertThatThrownBy(() -> postService.createPost(modifyPostRequestMock)).isInstanceOf(PostSlugIsNotUniqueException.class);
     }
 
     @Test
@@ -77,26 +85,26 @@ public class PostServiceUnitTest {
     }
 
     @Test
-    public void shouldUpdatePostUpdatesPostEntity() throws PostNotFoundException, MediaNotFoundException, PostSlugIsNotUnique {
+    public void shouldUpdatePostUpdatesPostEntity() throws PostNotFoundException, MediaNotFoundException, PostSlugIsNotUniqueException {
         when(postRepositoryMock.existsBySlugAndIdNot(anyString(), anyString())).thenReturn(false);
-        when(postRepositoryMock.findById("id")).thenReturn(Optional.ofNullable(listOfPostEntities.get(0)));
-        when(postRepositoryMock.save(any(Post.class))).thenReturn(listOfPostEntities.get(0));
+        when(postRepositoryMock.findById("id")).thenReturn(Optional.ofNullable(listOfPosts.get(0)));
+        when(postRepositoryMock.save(any(Post.class))).thenReturn(listOfPosts.get(0));
         when(modifyPostRequestMock.getThumbnailId()).thenReturn(null);
-        when(postConverterMock.of(any(ModifyPostRequest.class), any(Post.class))).thenReturn(listOfPostEntities.get(0));
-        assertThat(postService.updatePost("id", modifyPostRequestMock)).isEqualTo(listOfPostEntities.get(0));
+        when(postConverterMock.of(any(ModifyPostRequest.class), any(Post.class))).thenReturn(listOfPosts.get(0));
+        assertThat(postService.updatePost("id", modifyPostRequestMock)).isEqualTo(listOfPosts.get(0));
     }
 
     @Test
     public void shouldUpdatePostThrowsWhenSlugIsNotUnique() {
         when(modifyPostRequestMock.getSlug()).thenReturn("slug");
         when(postRepositoryMock.existsBySlugAndIdNot("slug", "id")).thenReturn(true);
-        assertThatThrownBy(() -> postService.updatePost("id", modifyPostRequestMock)).isInstanceOf(PostSlugIsNotUnique.class);
+        assertThatThrownBy(() -> postService.updatePost("id", modifyPostRequestMock)).isInstanceOf(PostSlugIsNotUniqueException.class);
     }
 
     @Test
     public void shouldUpdatePostThrowsWhenThumbnailNotFound() {
         when(postRepositoryMock.existsBySlugAndIdNot(any(), anyString())).thenReturn(false);
-        when(postRepositoryMock.findById("id")).thenReturn(Optional.ofNullable(listOfPostEntities.get(0)));
+        when(postRepositoryMock.findById("id")).thenReturn(Optional.ofNullable(listOfPosts.get(0)));
         when(mediaRepositoryMock.findById("id")).thenReturn(Optional.empty());
         when(modifyPostRequestMock.getThumbnailId()).thenReturn("id");
         assertThatThrownBy(() -> postService.updatePost("id", modifyPostRequestMock)).isInstanceOf(MediaNotFoundException.class);

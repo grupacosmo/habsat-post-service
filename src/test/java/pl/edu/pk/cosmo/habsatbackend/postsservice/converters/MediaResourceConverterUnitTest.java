@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.Media;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.resources.MediaResource;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.services.S3Service;
-import pl.edu.pk.cosmo.habsatbackend.postsservice.utils.factories.MediaFactory;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.MediaFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;

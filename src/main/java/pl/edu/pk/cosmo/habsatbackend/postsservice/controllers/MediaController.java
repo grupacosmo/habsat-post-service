@@ -1,6 +1,7 @@
 package pl.edu.pk.cosmo.habsatbackend.postsservice.controllers;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -9,10 +10,12 @@ import org.springframework.web.multipart.MultipartFile;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.converters.MediaResourceConverter;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.Media;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.exceptions.MediaNotFoundException;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.models.MediaSort;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.request.PagingRequest;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.services.MediaService;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.utlis.Paging;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/media")
@@ -22,9 +25,9 @@ public class MediaController {
     private final MediaResourceConverter mediaResourceConverter;
 
     @GetMapping
-    public ResponseEntity<?> findAllMedia() {
-        List<Media> media = mediaService.findAllMedia();
-        return new ResponseEntity<>(media.stream().map(mediaResourceConverter::of).collect(Collectors.toList()), HttpStatus.OK);
+    public ResponseEntity<?> findAllMedia(@Valid PagingRequest pagingRequest) {
+        Page<Media> media = mediaService.findAllMedia(Paging.of(pagingRequest, MediaSort.class));
+        return new ResponseEntity<>(media.map(mediaResourceConverter::of), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")

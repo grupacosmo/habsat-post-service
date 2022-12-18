@@ -10,7 +10,7 @@ import pl.edu.pk.cosmo.habsatbackend.postsservice.E2ETest;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.entities.Post;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.repositories.PostRepository;
 import pl.edu.pk.cosmo.habsatbackend.postsservice.resources.PostResource;
-import pl.edu.pk.cosmo.habsatbackend.postsservice.utils.factories.PostFactory;
+import pl.edu.pk.cosmo.habsatbackend.postsservice.PostFactory;
 
 import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;

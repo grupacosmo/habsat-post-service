@@ -1,6 +1,6 @@
 package pl.edu.pk.cosmo.habsatbackend.postsservice.models;
 
-public enum PostSort {
+public enum MediaSort {
     createdAt,
-    publishedAt;
+    nameOfFile
 }
