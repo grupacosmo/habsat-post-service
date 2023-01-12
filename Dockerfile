@@ -1,32 +1,41 @@
-################################
-######       BUILD        ######
-################################
-
-FROM maven:3.8.6-jdk-11 AS build
+FROM maven:3-eclipse-temurin-17-alpine AS deps
 
 WORKDIR /app
-
 COPY pom.xml /app
-RUN mvn org.apache.maven.plugins:maven-dependency-plugin:3.0.0:go-offline
 
+RUN mvn go-offline:resolve-dependencies
+
+
+FROM maven:3-eclipse-temurin-17-alpine AS build
+
+WORKDIR /app
+COPY --from=deps /root/.m2/repository /root/.m2/repository
 COPY . /app
+
 RUN mvn package -DskipTests -o
 
-CMD ["mvn", "spring-boot:run"]
 
-################################
-######      RELEASE       ######
-################################
+FROM maven:3-eclipse-temurin-17-alpine AS dev
 
-FROM adoptopenjdk/openjdk11:jdk-11.0.16.1_1-alpine-slim AS release
+WORKDIR /app
+COPY --from=deps /root/.m2/repository /root/.m2/repository
+COPY ./.docker/docker-entrypoint-dev.sh /docker-entrypoint.sh
+
+RUN apk add inotify-tools
+RUN chmod +x /docker-entrypoint.sh
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
+
+
+FROM eclipse-temurin:17.0.5_8-jdk-alpine AS release
 
 LABEL maintainer="grupacosmo/webdev"
 WORKDIR /app
 
-COPY --from=build /app/target/*.jar /app/service.jar
+COPY --from=build /app/target/app.jar /app/app.jar
 
 RUN addgroup --system app && adduser -S -s /bin/false -G app app
 RUN chown -R app:app /app
 
 USER app
-CMD ["java", "-jar", "service.jar"]
+CMD ["java", "-jar", "app.jar"]

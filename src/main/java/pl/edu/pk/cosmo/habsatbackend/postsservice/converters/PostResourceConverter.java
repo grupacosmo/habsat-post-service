@@ -22,7 +22,8 @@ public class PostResourceConverter {
                 .setPublishedAt(post.getPublishedAt());
 
         Media thumbnail = post.getThumbnail();
-        if (thumbnail != null) resource.setThumbnail(mediaResourceConverter.of(thumbnail));
+        if (thumbnail != null)
+            resource.setThumbnail(mediaResourceConverter.of(thumbnail));
 
         return resource;
     }
