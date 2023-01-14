@@ -1,0 +1,11 @@
+name: HabSat - Pull Request
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  integration-tests:
+    name: Integration Tests
+    uses: grupacosmo/habsat-starter/.github/workflows/integration-tests.yaml@master

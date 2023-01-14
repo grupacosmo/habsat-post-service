@@ -1,4 +1,4 @@
-name: HabSat - CI/CD
+name: HabSat - Deploy Staging
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
 
 jobs:
   tests:
-    name: Test
-    uses: grupacosmo/habsat-starter/.github/workflows/tests.yaml@master
+    name: Integration Tests
+    uses: grupacosmo/habsat-starter/.github/workflows/integration-tests.yaml@master
 
   build:
     name: Build
@@ -23,3 +23,8 @@ jobs:
     name: Staging
     needs: [build]
     uses: grupacosmo/habsat-starter/.github/workflows/deploy.yaml@master
+
+  e2e-tests:
+    name: E2E Tests
+    needs: [deploy-staging]
+    uses: grupacosmo/habsat-starter/.github/workflows/e2e-tests.yaml@master
