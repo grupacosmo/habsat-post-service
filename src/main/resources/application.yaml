@@ -1,10 +1,9 @@
 spring:
   application:
-    name: 'post-service'
+    name: "post-service"
   data:
     mongodb:
-      host: ${MONGO_HOST}
-      port: ${MONGO_PORT}
+      uri: ${MONGO_URI}
       database: ${MONGO_DB}
   mvc:
     pathmatch:
